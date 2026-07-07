@@ -39,6 +39,12 @@ export async function POST(req: Request) {
     // Run the CEO Agent with project context
     const runner = createRunner(CEOAgent);
     const sessionId = `exec_${projectId}_${Date.now()}`;
+    
+    await firebaseSessionService.createSession({
+      sessionId,
+      appName: 'BoardroomAI',
+      userId: 'system',
+    });
 
     const events = runner.runAsync({
       userId: 'system',

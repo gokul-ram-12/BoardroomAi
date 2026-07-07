@@ -3,8 +3,23 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { ArrowRight, Bot, Sparkles } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function Hero() {
+  const { user, signInWithGoogle } = useAuth();
+  const router = useRouter();
+
+  const handleAction = async () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
@@ -44,11 +59,11 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Button size="lg" className="w-full sm:w-auto gap-2 group">
-            Start Free Trial
+          <Button size="lg" className="w-full sm:w-auto gap-2 group" onClick={handleAction}>
+            {user ? 'Go to Dashboard' : 'Start Free Trial'}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto glass gap-2">
+          <Button size="lg" variant="outline" className="w-full sm:w-auto glass gap-2" onClick={handleAction}>
             <Bot className="w-4 h-4" />
             View Demo
           </Button>

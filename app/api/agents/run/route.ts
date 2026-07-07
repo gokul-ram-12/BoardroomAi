@@ -5,6 +5,7 @@ import { getApiKey, MISSING_API_KEY_ERROR } from '../../../../ai/core/adk';
 import { z } from 'zod';
 import { adminAuth } from '../../../../lib/firebase/admin';
 import { BaseAgent } from '@google/adk';
+import { firebaseSessionService } from '../../../../ai/memory/FirebaseSessionService';
 
 const AgentRunSchema = z.object({
   agentId: z.string().min(1),
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await adminAuth.verifyIdToken(sessionCookie, true);
     const userId = decodedClaims.uid;
 
     const body = await req.json();
@@ -61,6 +62,12 @@ export async function POST(req: NextRequest) {
           send({ type: 'status', message: `Initializing ${agentId}...`, agent: agentId });
 
           const runner = createRunner(targetAgent);
+          await firebaseSessionService.createSession({
+            sessionId,
+            appName: 'BoardroomAI',
+            userId,
+          });
+
           const events = runner.runAsync({
             userId,
             sessionId,

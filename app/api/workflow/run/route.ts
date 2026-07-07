@@ -4,6 +4,7 @@ import { CEOAgent } from '../../../../ai/agents';
 import { getApiKey, MISSING_API_KEY_ERROR } from '../../../../ai/core/adk';
 import { z } from 'zod';
 import { adminAuth } from '../../../../lib/firebase/admin';
+import { firebaseSessionService } from '../../../../ai/memory/FirebaseSessionService';
 
 const WorkflowRequestSchema = z.object({
   task: z.string().min(1),
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await adminAuth.verifyIdToken(sessionCookie, true);
     const userId = decodedClaims.uid;
 
     const body = await req.json();
@@ -54,6 +55,12 @@ export async function POST(req: NextRequest) {
           const fullTask = projectId
             ? `${task}\n\nContext: This is for Project ID: ${projectId}. Coordinate your specialist agents to provide a comprehensive response.`
             : `${task}\n\nCoordinate your specialist agents to provide a comprehensive enterprise-grade response.`;
+
+          await firebaseSessionService.createSession({
+            sessionId,
+            appName: 'BoardroomAI',
+            userId,
+          });
 
           const events = runner.runAsync({
             userId,
