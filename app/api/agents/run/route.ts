@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
 
           for await (const event of events) {
             const author = (event as unknown as { author?: string }).author ?? agentId;
+            const isFinalResponse = (event as unknown as { isFinalResponse?: boolean }).isFinalResponse ?? false;
             // Stream function calls (agent delegations)
             // Cast through unknown to avoid TS Event overlap error
             const eventAny = event as unknown as Record<string, unknown>;
