@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Core principle: Secure by default.
+    // Users can only upload to their own user directory.
+    
+    match /users/{userId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /workspaces/{workspaceId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /reports/{reportId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
