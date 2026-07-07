@@ -20,6 +20,10 @@ export function Hero() {
     }
   };
 
+  const handleDemo = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
@@ -63,7 +67,7 @@ export function Hero() {
             {user ? 'Go to Dashboard' : 'Start Free Trial'}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto glass gap-2" onClick={handleAction}>
+          <Button size="lg" variant="outline" className="w-full sm:w-auto glass gap-2" onClick={handleDemo}>
             <Bot className="w-4 h-4" />
             View Demo
           </Button>

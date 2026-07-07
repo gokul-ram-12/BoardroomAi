@@ -21,16 +21,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  try {
-    // Auth check
-    const sessionCookie = req.cookies.get('__session')?.value;
-    if (!sessionCookie || !adminAuth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  let userId = 'anonymous_demo_user';
+  const sessionCookie = req.cookies.get('__session')?.value;
+  if (sessionCookie && adminAuth) {
+    try {
+      const decodedClaims = await adminAuth.verifyIdToken(sessionCookie, true);
+      userId = decodedClaims.uid;
+    } catch (e) {
+      console.warn('Invalid session cookie, falling back to anonymous');
     }
+  }
 
-    const decodedClaims = await adminAuth.verifyIdToken(sessionCookie, true);
-    const userId = decodedClaims.uid;
-
+  try {
     const body = await req.json();
     const result = WorkflowRequestSchema.safeParse(body);
     if (!result.success) {
@@ -79,6 +81,13 @@ export async function POST(req: NextRequest) {
             // Stream function calls (agent delegations)
             // Cast through unknown to avoid TS Event overlap error
             const eventAny = event as unknown as Record<string, unknown>;
+            
+            // Check if the ADK returned a model error (e.g. invalid API key)
+            if (eventAny.errorMessage) {
+              send({ type: 'error', message: `Model Error: ${eventAny.errorMessage}` });
+              continue;
+            }
+
             const content = eventAny.content as Record<string, unknown> | undefined;
             const parts = content?.parts as Array<Record<string, unknown>> | undefined;
 
